@@ -1,0 +1,54 @@
+{
+  "games": [
+    {
+      "id": "1",
+      "title": "The Legend of Zelda: Breath of the Wild",
+      "image": "https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe",
+      "description": "Explore a vast open world, discover ancient secrets and embark on an adventure through Hyrule.",
+      "genre": "Adventure",
+      "platform": "Nintendo Switch",
+      "releaseYear": 2017,
+      "status": "Playing"
+    },
+    {
+      "id": "2",
+      "title": "Super Mario Odyssey",
+      "image": "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3",
+      "description": "Join Mario on a globe-trotting adventure to rescue Princess Peach from Bowser.",
+      "genre": "Platformer",
+      "platform": "Nintendo Switch",
+      "releaseYear": 2017,
+      "status": "Completed"
+    },
+    {
+      "id": "3",
+      "title": "Minecraft",
+      "image": "https://images.unsplash.com/photo-1627856013091-fed6e4e30025",
+      "description": "Build, explore and survive in a procedurally generated world limited only by your imagination.",
+      "genre": "Sandbox",
+      "platform": "PC",
+      "releaseYear": 2011,
+      "status": "Playing"
+    },
+    {
+      "id": "4",
+      "title": "The Witcher 3: Wild Hunt",
+      "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420",
+      "description": "Become Geralt of Rivia and hunt monsters across a massive open world.",
+      "genre": "RPG",
+      "platform": "PlayStation 5",
+      "releaseYear": 2015,
+      "status": "Backlog"
+    },
+    {
+      "id": "5",
+      "title": "Hades",
+      "image": "https://images.unsplash.com/photo-1542751371-adc38448a05e",
+      "description": "Battle through the underworld in this fast-paced action roguelike.",
+      "genre": "Action",
+      "platform": "PC",
+      "releaseYear": 2020,
+      "status": "Backlog"
+    }
+  ]
+}

@@ -13,6 +13,7 @@ export default function GameStackNavigator() {
                 component={TabNavigator}
                 options={{ headerShown: false }}
             />
+
             <Stack.Screen
                 name="GameDetails"
                 component={GameDetailsScreen}

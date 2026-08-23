@@ -4,31 +4,91 @@ import {
     StyleSheet,
     Text,
     View,
+    ActivityIndicator,
 } from 'react-native';
+import { useEffect, useState } from 'react';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+
 import StatusBadge from '../components/StatusBadge';
 import GameStat from '../components/GameStat';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
+import { RootStackParamList } from '../types/navigation';
+import { Game } from '../types/Game';
+import { getGameById } from '../services/gamesService';
 
-export default function GameDetailsScreen() {
+type Props = NativeStackScreenProps<
+    RootStackParamList,
+    'GameDetails'
+>;
+
+export default function GameDetailsScreen({ route }: Props) {
+    const { gameId } = route.params;
+
+    const [game, setGame] = useState<Game | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        loadGame();
+    }, [gameId]);
+
+    async function loadGame() {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const data = await getGameById(gameId);
+
+            setGame(data);
+        } catch (error) {
+            setError('Could not load game details.');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    if (loading) {
+        return (
+            <View style={styles.center}>
+                <ActivityIndicator
+                    size="large"
+                    color={colors.primary}
+                />
+
+                <Text style={styles.loadingText}>
+                    Loading game...
+                </Text>
+            </View>
+        );
+    }
+
+    if (error || !game) {
+        return (
+            <View style={styles.center}>
+                <Text style={styles.errorText}>
+                    {error ?? 'Game not found.'}
+                </Text>
+            </View>
+        );
+    }
+
     return (
         <ScrollView
             style={styles.container}
             contentContainerStyle={styles.content}
         >
             <Image
-                source={{
-                    uri: 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe',
-                }}
+                source={{ uri: game.image }}
                 style={styles.cover}
             />
 
             <View style={styles.info}>
                 <Text style={styles.title}>
-                    The Legend of Zelda: Breath of the Wild
+                    {game.title}
                 </Text>
 
-                <StatusBadge status="Playing" />
+                <StatusBadge status={game.status} />
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>
@@ -36,8 +96,7 @@ export default function GameDetailsScreen() {
                     </Text>
 
                     <Text style={styles.description}>
-                        Explore a vast open world, discover ancient secrets
-                        and embark on an adventure through Hyrule.
+                        {game.description}
                     </Text>
                 </View>
 
@@ -48,17 +107,17 @@ export default function GameDetailsScreen() {
 
                     <GameStat
                         label="Genre"
-                        value="Adventure"
+                        value={game.genre}
                     />
 
                     <GameStat
                         label="Platform"
-                        value="Nintendo Switch"
+                        value={game.platform}
                     />
 
                     <GameStat
                         label="Release Year"
-                        value="2017"
+                        value={String(game.releaseYear)}
                     />
                 </View>
             </View>
@@ -107,5 +166,25 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         fontSize: 16,
         lineHeight: 24,
+    },
+
+    center: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.background,
+        padding: spacing.md,
+    },
+
+    loadingText: {
+        color: colors.textSecondary,
+        fontSize: 16,
+        marginTop: spacing.md,
+    },
+
+    errorText: {
+        color: colors.error,
+        fontSize: 16,
+        textAlign: 'center',
     },
 });
