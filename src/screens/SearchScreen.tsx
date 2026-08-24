@@ -4,10 +4,12 @@ import {
     Text,
     View,
 } from 'react-native';
+import { useMemo, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import GameCard from '../components/GameCard';
+import SearchBar from '../components/SearchBar';
 import EmptyState from '../components/EmptyState';
 
 import { useGames } from '../context/GamesContext';
@@ -15,37 +17,64 @@ import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { RootStackParamList } from '../types/navigation';
 
-type BacklogScreenNavigationProp =
+type SearchScreenNavigationProp =
     NativeStackNavigationProp<RootStackParamList>;
 
-export default function BacklogScreen() {
+export default function SearchScreen() {
     const navigation =
-        useNavigation<BacklogScreenNavigationProp>();
+        useNavigation<SearchScreenNavigationProp>();
 
     const { games } = useGames();
 
-    const backlogGames = games.filter(
-        (game) => game.status === 'Backlog'
-    );
+    const [query, setQuery] = useState('');
+
+    const filteredGames = useMemo(() => {
+        const searchTerm = query
+            .trim()
+            .toLowerCase();
+
+        if (!searchTerm) {
+            return games;
+        }
+
+        return games.filter((game) => {
+            return (
+                game.title
+                    .toLowerCase()
+                    .includes(searchTerm) ||
+                game.genre
+                    .toLowerCase()
+                    .includes(searchTerm) ||
+                game.platform
+                    .toLowerCase()
+                    .includes(searchTerm)
+            );
+        });
+    }, [games, query]);
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>
-                Backlog
+                Search
             </Text>
 
             <Text style={styles.subtitle}>
-                Games you want to play
+                Find games by title, genre or platform.
             </Text>
 
-            {backlogGames.length === 0 ? (
+            <SearchBar
+                value={query}
+                onChangeText={setQuery}
+            />
+
+            {filteredGames.length === 0 ? (
                 <EmptyState
-                    title="Your backlog is empty"
-                    message="Games you add to your backlog will appear here."
+                    title="No games found"
+                    message={`No games match "${query}".`}
                 />
             ) : (
                 <FlatList
-                    data={backlogGames}
+                    data={filteredGames}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
                         <GameCard
@@ -78,14 +107,13 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: colors.background,
-        paddingHorizontal: spacing.md,
+        padding: spacing.md,
     },
 
     title: {
         color: colors.text,
         fontSize: 32,
         fontWeight: '700',
-        marginTop: spacing.md,
         marginBottom: spacing.xs,
     },
 

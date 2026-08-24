@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
     FlatList,
     StyleSheet,
     Text,
@@ -10,57 +8,36 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import GameCard from '../components/GameCard';
+import LoadingView from '../components/LoadingView';
+import OfflineBanner from '../components/OfflineBanner';
+
+import { useGames } from '../context/GamesContext';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
-import { Game } from '../types/Game';
 import { RootStackParamList } from '../types/navigation';
-import { getGames } from '../services/gamesService';
 
 type HomeScreenNavigationProp =
     NativeStackNavigationProp<RootStackParamList>;
 
 export default function HomeScreen() {
-    const navigation = useNavigation<HomeScreenNavigationProp>();
+    const navigation =
+        useNavigation<HomeScreenNavigationProp>();
 
-    const [games, setGames] = useState<Game[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        loadGames();
-    }, []);
-
-    async function loadGames() {
-        try {
-            setLoading(true);
-            setError(null);
-
-            const data = await getGames();
-
-            setGames(data);
-        } catch (error) {
-            setError('Could not load games. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    }
+    const {
+        games,
+        loading,
+        error,
+        isOffline,
+        refreshGames,
+    } = useGames();
 
     if (loading) {
         return (
-            <View style={styles.center}>
-                <ActivityIndicator
-                    size="large"
-                    color={colors.primary}
-                />
-
-                <Text style={styles.loadingText}>
-                    Loading games...
-                </Text>
-            </View>
+            <LoadingView message="Loading games..." />
         );
     }
 
-    if (error) {
+    if (error && games.length === 0) {
         return (
             <View style={styles.center}>
                 <Text style={styles.errorText}>
@@ -72,6 +49,8 @@ export default function HomeScreen() {
 
     return (
         <View style={styles.container}>
+            {isOffline && <OfflineBanner />}
+
             <Text style={styles.title}>
                 My Games
             </Text>
@@ -89,14 +68,23 @@ export default function HomeScreen() {
                         image={item.image}
                         status={item.status}
                         onPress={() =>
-                            navigation.navigate('GameDetails', {
-                                gameId: item.id,
-                            })
+                            navigation.navigate(
+                                'GameDetails',
+                                {
+                                    gameId: item.id,
+                                }
+                            )
                         }
                     />
                 )}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.list}
+                onRefresh={refreshGames}
+                refreshing={loading}
+                initialNumToRender={6}
+                maxToRenderPerBatch={6}
+                windowSize={5}
+                removeClippedSubviews={true}
             />
         </View>
     );
@@ -107,13 +95,13 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.background,
         paddingHorizontal: spacing.md,
+        paddingTop: spacing.md,
     },
 
     title: {
         color: colors.text,
         fontSize: 32,
         fontWeight: '700',
-        marginTop: spacing.md,
         marginBottom: spacing.xs,
     },
 
@@ -133,12 +121,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: colors.background,
         padding: spacing.md,
-    },
-
-    loadingText: {
-        color: colors.textSecondary,
-        fontSize: 16,
-        marginTop: spacing.md,
     },
 
     errorText: {
